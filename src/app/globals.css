@@ -338,3 +338,4 @@ s { color: var(--tinta-3); }
   .formulario .boton { align-self: stretch; }
   .pie-enlaces { padding: 0 16px 22px; }
 }
+.login-error { margin-top: 12px; font-size: 13px; color: #a3332b; text-align: center; }
