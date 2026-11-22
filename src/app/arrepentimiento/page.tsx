@@ -15,9 +15,14 @@ export default async function Arrepentimiento() {
         <p className="ceja">Botón de arrepentimiento</p>
         <h1>Arrepentirte de tu compra</h1>
         <p>
-          Tenés 10 días corridos desde la compra para arrepentirte, sin dar explicaciones. Completá el formulario: te
-          damos un código de gestión al instante y te devolvemos el dinero por el mismo medio de pago. No hace falta
-          ingresar a tu cuenta.
+          Si todavía no abriste ninguna página del libro, tenés 10 días corridos desde la compra para arrepentirte, sin
+          dar explicaciones. Completá el formulario: te damos un código de gestión al instante y, después de verificar
+          que no se abrió ninguna página, te devolvemos el dinero por el mismo medio de pago. No hace falta ingresar a
+          tu cuenta.
+        </p>
+        <p className="aviso">
+          Los libros son contenido digital de acceso inmediato: una vez que abrís una página ya no corresponde el
+          arrepentimiento (art. 1116, inc. c, del Código Civil y Comercial). Lo aceptaste al comprar.
         </p>
         <FormularioArrepentimiento emailInicial={u?.email ?? ""} />
         <p className="tenue pequeño">

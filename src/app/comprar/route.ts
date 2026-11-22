@@ -5,31 +5,40 @@ import { dispositivoValido } from "@/lib/dispositivos";
 import { crearPreferencia } from "@/lib/mercadopago";
 import { supabaseAdmin, usuarioActual } from "@/lib/supabase/server";
 
-/** Qué se compra: ?producto=<id> o el campo "producto" del formulario. Sin dato, el primer libro. */
-async function productoPedido(req: NextRequest) {
+/**
+ * Qué se compra: ?producto=<id> o el campo "producto" del formulario (sin dato, el primer libro),
+ * y si marcó la casilla de "al abrir el libro pierdo el arrepentimiento" en /confirmar.
+ */
+async function pedido(req: NextRequest) {
   let id = req.nextUrl.searchParams.get("producto");
-  if (!id && req.method === "POST") {
+  let acepto = false;
+  if (req.method === "POST") {
     try {
       const f = await req.formData();
-      id = (f.get("producto") as string | null) ?? null;
+      id = (f.get("producto") as string | null) ?? id;
+      acepto = f.get("acepto") === "si";
     } catch {
       /* formulario sin campos */
     }
   }
-  if (!id) return PRODUCTO_POR_DEFECTO;
-  return productoPorId(id);
+  return { producto: id ? productoPorId(id) : PRODUCTO_POR_DEFECTO, acepto };
 }
 
 async function comprar(req: NextRequest) {
   const base = req.nextUrl.origin;
-  const producto = await productoPedido(req);
+  const { producto, acepto } = await pedido(req);
   if (!producto) return NextResponse.redirect(`${base}/biblioteca`, 303);
 
-  const u = await usuarioActual();
-  if (!u) {
-    const volver = `/comprar?producto=${encodeURIComponent(producto.id)}`;
-    return NextResponse.redirect(`${base}/login?next=${encodeURIComponent(volver)}`, 303);
+  // Todos los botones "Comprar" pasan primero por /confirmar (resumen + casilla obligatoria).
+  // Solo se crea la orden si la casilla viene marcada: toda orden implica esa aceptación.
+  const confirmar = `/confirmar?producto=${encodeURIComponent(producto.id)}`;
+  if (!acepto) {
+    const falta = req.method === "POST" && req.headers.get("referer")?.includes("/confirmar") ? "&falta=1" : "";
+    return NextResponse.redirect(`${base}${confirmar}${falta}`, 303);
   }
+
+  const u = await usuarioActual();
+  if (!u) return NextResponse.redirect(`${base}/login?next=${encodeURIComponent(confirmar)}`, 303);
   if (!(await dispositivoValido(u.id))) return NextResponse.redirect(`${base}/auth/salir?motivo=sesion-cerrada`, 303);
 
   // El precio se calcula acá, en el servidor (con descuento si ya tiene otro libro).

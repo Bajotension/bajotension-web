@@ -39,6 +39,8 @@ Hacelo en este orden. Cada paso deja algo que el siguiente necesita. Claude pued
 **Paso 8 · Dominio.** Registrá bajotension.ar en nic.ar → en Netlify, Domain management → Add domain → seguí los pasos de DNS. Después actualizá la dirección en Google, Supabase, Mercado Pago y `NEXT_PUBLIC_SITE_URL`.
 
 ### Cómo se atiende un arrepentimiento
+Antes de pagar, el comprador marca obligatoriamente que al abrir una página pierde el arrepentimiento (art. 1116 inc. c CCyC); sin esa casilla no se crea la orden. Solo corresponde devolver si **no abrió ninguna página**: en Table editor → `lecturas`, filtrá por su `user_id` y mirá si hay filas posteriores a la fecha de la orden. Si hay, se responde que no corresponde.
+
 Los pedidos llegan a Supabase → Table editor → `arrepentimientos`. Devolvé el dinero desde Mercado Pago (Actividad → la venta → Devolver). El aviso de Mercado Pago le quita el acceso a la guía solo. Después marcá `resuelto` con la fecha.
 
 ## Libros y combos

@@ -56,9 +56,15 @@ export default function Terminos() {
 
         <h2>5. Arrepentimiento</h2>
         <p>
-          Podés arrepentirte de la compra dentro de los 10 días corridos desde que la hiciste, sin dar motivos, desde el{" "}
-          <Link href="/arrepentimiento">botón de arrepentimiento</Link>. Te devolvemos el dinero por el mismo medio de pago
-          y se da de baja el acceso a lo que compraste. Si el arrepentimiento es de un combo, se da de baja el combo completo.
+          Los libros son contenido digital que se habilita al instante. Por eso, como prevé el artículo 1116, inciso c,
+          del Código Civil y Comercial, <strong>una vez que abrís cualquier página del libro ya no podés arrepentirte
+          de la compra</strong>. Lo aceptás de forma expresa, marcando una casilla, antes de pagar.
+        </p>
+        <p>
+          Si todavía no abriste ninguna página, podés arrepentirte dentro de los 10 días corridos desde la compra, sin
+          dar motivos, desde el <Link href="/arrepentimiento">botón de arrepentimiento</Link>. Verificamos en nuestros
+          registros que no se haya abierto ninguna página y te devolvemos el dinero por el mismo medio de pago; el
+          acceso se da de baja. Si el arrepentimiento es de un combo, se da de baja el combo completo.
         </p>
 
         <h2>6. Alcance del contenido</h2>
