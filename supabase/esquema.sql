@@ -67,3 +67,9 @@ create table if not exists public.arrepentimientos (
   resuelto timestamptz
 );
 alter table public.arrepentimientos enable row level security;
+
+-- Permisos explícitos: sólo el servidor (service_role) lee y escribe estas tablas.
+-- Así funciona aunque el proyecto se haya creado sin "Grant API access".
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
