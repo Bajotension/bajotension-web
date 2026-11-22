@@ -58,7 +58,7 @@ export default function Terminos() {
         <p>
           Los libros son contenido digital que se habilita al instante. Por eso, como prevé el artículo 1116, inciso c,
           del Código Civil y Comercial, <strong>una vez que abrís cualquier página del libro ya no podés arrepentirte
-          de la compra</strong>. Lo aceptás de forma expresa, marcando una casilla, antes de pagar.
+          de la compra</strong>. Lo aceptás al marcar la casilla de aceptación de estos términos antes de pagar.
         </p>
         <p>
           Si todavía no abriste ninguna página, podés arrepentirte dentro de los 10 días corridos desde la compra, sin

@@ -9,7 +9,7 @@ import { exigirUsuario } from "@/lib/guardia";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Confirmar compra · Bajo Tensión", robots: { index: false } };
 
-/** Paso previo al pago: resumen y aceptación expresa de que, al abrir el libro, no hay arrepentimiento. */
+/** Paso previo al pago: resumen y aceptación de los términos (que incluyen el arrepentimiento solo sin lectura). */
 export default async function Confirmar({ searchParams }: { searchParams: Promise<{ producto?: string; falta?: string }> }) {
   const { producto: id, falta } = await searchParams;
   const producto = id ? productoPorId(id) : PRODUCTO_POR_DEFECTO;
@@ -39,10 +39,7 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
             <label className="casilla">
               <input type="checkbox" name="acepto" value="si" required />
               <span>
-                Acepto que el libro es contenido digital de acceso inmediato y que,{" "}
-                <strong>una vez que abro cualquiera de sus páginas, pierdo el derecho de arrepentimiento</strong>{" "}
-                (art. 1116, inc. c, del Código Civil y Comercial). Leí los{" "}
-                <Link href="/terminos" target="_blank">términos y condiciones</Link>.
+                Acepto los <Link href="/terminos" target="_blank">términos y condiciones</Link>
               </span>
             </label>
             {falta && <p className="aviso">Para seguir tenés que marcar la casilla.</p>}

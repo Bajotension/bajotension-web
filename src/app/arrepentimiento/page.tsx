@@ -22,7 +22,7 @@ export default async function Arrepentimiento() {
         </p>
         <p className="aviso">
           Los libros son contenido digital de acceso inmediato: una vez que abrís una página ya no corresponde el
-          arrepentimiento (art. 1116, inc. c, del Código Civil y Comercial). Lo aceptaste al comprar.
+          arrepentimiento (art. 1116, inc. c, del Código Civil y Comercial). Lo aceptaste en los términos y condiciones al comprar.
         </p>
         <FormularioArrepentimiento emailInicial={u?.email ?? ""} />
         <p className="tenue pequeño">
