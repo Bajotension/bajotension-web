@@ -121,7 +121,7 @@ export function Libro({
         <span className="tapa-firma">Bajo Tensión</span>
         <span className="tapa-web">
           <IconoInstagram size={14} />
-          bajotension.ar
+          {INSTAGRAM.usuario}
         </span>
         <div className="tapa-brillo" />
         {adquirido && (
