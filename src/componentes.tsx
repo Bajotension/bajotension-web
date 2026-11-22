@@ -116,6 +116,10 @@ export function Libro({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="tapa-rayo" src="/rayo.webp" alt="" draggable={false} />
         <span className="tapa-firma">Bajo Tensión</span>
+        <span className="tapa-web">
+          <IconoInstagram size={14} />
+          bajotension.ar
+        </span>
         <div className="tapa-brillo" />
       </div>
     </div>
