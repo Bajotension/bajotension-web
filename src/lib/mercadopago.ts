@@ -47,8 +47,10 @@ export async function crearPreferencia(orden: { id: string; monto: number; email
     }),
   });
   if (!res.ok) throw new Error(`Mercado Pago respondió ${res.status}: ${await res.text()}`);
-  const data = (await res.json()) as { id: string; init_point: string };
-  return data;
+  const data = (await res.json()) as { id: string; init_point: string; sandbox_init_point?: string };
+  // Con credenciales "TEST-" de una cuenta real, Mercado Pago pide usar el checkout de sandbox.
+  const usarSandbox = !esperaPagoReal() && (process.env.MP_ACCESS_TOKEN ?? "").startsWith("TEST-");
+  return { id: data.id, init_point: usarSandbox && data.sandbox_init_point ? data.sandbox_init_point : data.init_point };
 }
 
 type Pago = {
