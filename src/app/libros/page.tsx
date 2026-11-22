@@ -1,4 +1,4 @@
-import { ComparadorLibros, Encabezado, Libro, Pie } from "@/componentes";
+import { ComparadorLibros, Encabezado, Libro, Pie, SelloAdquirido, librosDelVisitante } from "@/componentes";
 import Link from "next/link";
 import { LIBROS } from "@/lib/catalogo";
 
@@ -7,7 +7,10 @@ export const metadata = {
   description: "Compará los libros de Bajo Tensión y mirá el índice de cada uno.",
 };
 
-export default function Libros() {
+export const dynamic = "force-dynamic";
+
+export default async function Libros() {
+  const tiene = await librosDelVisitante();
   return (
     <>
       <Encabezado />
@@ -23,9 +26,15 @@ export default function Libros() {
             <div className="coleccion">
               {LIBROS.map((l) => (
                 <Link key={l.id} href={`/libros/${l.slug}`} className="coleccion-item tapa">
-                  <Libro libro={l} chico />
+                  <Libro libro={l} chico adquirido={tiene.has(l.id)} />
                   <span className="coleccion-titulo">{l.titulo}</span>
-                  <span className="tenue">{l.disponible ? "Ver índice" : "Próximamente · Ver índice"}</span>
+                  {tiene.has(l.id) ? (
+                    <SelloAdquirido />
+                  ) : l.disponible ? (
+                    <span className="boton chico">Comprar</span>
+                  ) : (
+                    <span className="tenue">Próximamente · Ver índice</span>
+                  )}
                 </Link>
               ))}
             </div>

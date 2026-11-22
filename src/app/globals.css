@@ -147,8 +147,10 @@ s { color: var(--tinta-3); }
 .tapa-rayo { position: absolute; left: 50%; top: 64%; height: 26%; width: auto; transform: translate(-50%, -50%); filter: drop-shadow(0 10px 24px rgba(0,0,0,.45)) drop-shadow(0 0 18px rgba(217,180,90,.25)); user-select: none; pointer-events: none; }
 .tapa-firma { position: relative; margin-top: auto; font-family: var(--f-titulo), var(--f-texto), sans-serif; font-weight: 600; letter-spacing: -0.02em; font-size: calc(var(--w) * .052); padding-top: 6%; border-top: 1px solid var(--tapa-borde, rgba(217,180,90,.5)); width: 48%; }
 /* Instagram + sitio, abajo a la derecha de la tapa */
-.tapa-web { position: absolute; right: 9%; bottom: 9%; display: inline-flex; align-items: center; gap: .45em; font-size: calc(var(--w) * .036); font-weight: 500; letter-spacing: .01em; color: var(--tapa-texto-2, rgba(255,255,255,.78)); }
+.tapa-web { position: absolute; right: 6%; bottom: 3.2%; display: inline-flex; align-items: center; gap: .45em; font-size: calc(var(--w) * .036); font-weight: 500; letter-spacing: .01em; color: var(--tapa-texto-2, rgba(255,255,255,.78)); }
 .tapa-web svg { width: 1.15em; height: 1.15em; flex: none; }
+/* Tilde verde en la tapa de un libro adquirido */
+.tapa-sello { position: absolute; top: 4%; right: 5%; width: calc(var(--w) * .13); height: calc(var(--w) * .13); border-radius: 50%; display: grid; place-items: center; background: #1f9d55; color: #fff; font-size: calc(var(--w) * .08); box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 6px 14px -4px rgba(0,0,0,.4); }
 /* Reflejo que cruza la tapa al abrir */
 .tapa-brillo { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.14) 50%, transparent 65%); transform: translateX(-120%); transition: transform 1.1s cubic-bezier(.2,.7,.2,1); }
 
@@ -320,6 +322,9 @@ s { color: var(--tinta-3); }
   .libro-info { align-items: center; }
 }
 /* ---------- Colección: comparar libros, índice, ficha ---------- */
+.adquirido { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; border-radius: 999px; background: #e7f6ec; color: #17733f; font-size: 14px; font-weight: 600; border: 1px solid #bfe5cc; }
+.adquirido-circulo { width: 20px; height: 20px; border-radius: 50%; background: #1f9d55; color: #fff; display: grid; place-items: center; font-size: 14px; }
+.libro.es-mio { border-color: #bfe5cc; }
 .bajada-seccion { margin-top: 18px; font-size: 18px; color: var(--tinta-2); max-width: 36em; }
 .precio-viejo { margin-left: 10px; font-size: .88em; opacity: .8; }
 .boton .precio-viejo { color: rgba(255,255,255,.65); }

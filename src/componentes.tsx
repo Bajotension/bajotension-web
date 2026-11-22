@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { LIBROS, PACK, libroPorId, productoDeLibro, productoDisponible, type Libro as LibroDatos } from "@/lib/catalogo";
+import { librosDelUsuario } from "@/lib/acceso";
+import { LIBROS, PACK, libroPorId, precioPara, productoDeLibro, type LibroId, type Libro as LibroDatos } from "@/lib/catalogo";
 import { ENLACES_LEGALES, VENDEDOR, formatoARS } from "@/lib/config";
 import { INSTAGRAM } from "@/lib/marca";
 import { usuarioActual } from "@/lib/supabase/server";
@@ -85,9 +86,11 @@ export function Pie() {
 export function Libro({
   libro,
   chico = false,
+  adquirido = false,
 }: {
   libro: Pick<LibroDatos, "tituloTapa" | "bajada" | "color" | "capitulos">;
   chico?: boolean;
+  adquirido?: boolean;
 }) {
   const [linea1, linea2] = libro.tituloTapa;
   const primero = libro.capitulos[0];
@@ -121,6 +124,11 @@ export function Libro({
           bajotension.ar
         </span>
         <div className="tapa-brillo" />
+        {adquirido && (
+          <span className="tapa-sello" title="Adquirido">
+            <IconoTilde />
+          </span>
+        )}
       </div>
     </div>
   );
@@ -144,6 +152,30 @@ export function BotonCompra({
   );
 }
 
+export function IconoTilde() {
+  return (
+    <svg viewBox="0 0 16 16" width="1em" height="1em" aria-hidden>
+      <path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Cartelito verde con tilde: el usuario ya tiene este libro. */
+export function SelloAdquirido() {
+  return (
+    <span className="adquirido">
+      <span className="adquirido-circulo"><IconoTilde /></span>
+      Adquirido
+    </span>
+  );
+}
+
+/** Libros que tiene el usuario que está mirando (vacío si no ingresó). */
+export async function librosDelVisitante(): Promise<Set<LibroId>> {
+  const u = await usuarioActual();
+  return u ? librosDelUsuario(u.id) : new Set();
+}
+
 /** Índice de un libro: número, título y de qué trata cada capítulo. */
 export function Indice({ libro }: { libro: LibroDatos }) {
   return (
@@ -162,7 +194,8 @@ export function Indice({ libro }: { libro: LibroDatos }) {
 }
 
 /** Tabla para comparar los libros de la colección, lado a lado. */
-export function ComparadorLibros() {
+export async function ComparadorLibros() {
+  const tiene = await librosDelVisitante();
   const filas: [string, (l: LibroDatos) => React.ReactNode][] = [
     ["Para quién", (l) => l.para],
     ["Nivel", (l) => l.nivel],
@@ -189,7 +222,7 @@ export function ComparadorLibros() {
       },
     ],
   ];
-  const pack = productoDisponible(PACK);
+  const precioPack = precioPara(PACK, tiene);
   return (
     <div className="comparar" style={{ ["--cols" as string]: LIBROS.length }}>
       <div className="comparar-fila comparar-cabeza">
@@ -216,19 +249,30 @@ export function ComparadorLibros() {
         <span className="comparar-etiqueta" />
         {LIBROS.map((l) => (
           <div key={l.id} className="comparar-celda">
-            <Link href={`/libros/${l.slug}`} className="boton secundario chico">Ver índice</Link>
-            {l.disponible && (
-              <BotonCompra producto={productoDeLibro(l.id).id} className="boton chico">Comprar</BotonCompra>
+            {tiene.has(l.id) ? (
+              <>
+                <SelloAdquirido />
+                <Link href={`/leer/${l.slug}`} className="boton chico">Leer</Link>
+              </>
+            ) : (
+              <>
+                <Link href={`/libros/${l.slug}`} className="boton secundario chico">Ver índice</Link>
+                {precioPara(productoDeLibro(l.id), tiene) != null && (
+                  <BotonCompra producto={productoDeLibro(l.id).id} className="boton chico">
+                    Comprar
+                  </BotonCompra>
+                )}
+              </>
             )}
           </div>
         ))}
       </div>
-      {pack && (
+      {precioPack != null && (
         <div className="comparar-pack">
           <div>
             <strong>{PACK.titulo}</strong>
             <span className="tenue">
-              {" "}· {formatoARS(PACK.precioARS)} <s>{formatoARS(PACK.precioRegularARS)}</s>
+              {" "}· {formatoARS(precioPack)} <s>{formatoARS(PACK.precioRegularARS)}</s>
             </span>
           </div>
           <BotonCompra producto={PACK.id} className="boton chico">Comprar el pack</BotonCompra>

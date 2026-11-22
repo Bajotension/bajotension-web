@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BotonCompra, Encabezado, Libro, Pie } from "@/componentes";
+import { BotonCompra, Encabezado, Libro, Pie, SelloAdquirido } from "@/componentes";
 import { librosDelUsuario } from "@/lib/acceso";
 import { LIBROS, PACK, libroPorId, precioPara, productoDeLibro } from "@/lib/catalogo";
 import { formatoARS } from "@/lib/config";
@@ -17,19 +17,21 @@ export default async function Biblioteca() {
       <main className="contenedor">
         <h1 className="titulo-pagina">Mi biblioteca</h1>
         <p className="tenue">{u.email}</p>
-        {LIBROS.map((libro) => {
+        {/* Primero los libros que ya tiene; después el resto de la colección para comprar. */}
+        {[...LIBROS].sort((x, y) => Number(tiene.has(y.id)) - Number(tiene.has(x.id))).map((libro) => {
           const producto = productoDeLibro(libro.id);
           const precio = precioPara(producto, tiene);
           const conDescuento = precio != null && precio < producto.precioARS;
           return (
-            <div className="libro" key={libro.id}>
+            <div className={`libro${tiene.has(libro.id) ? " es-mio" : ""}`} key={libro.id}>
               <div className="tapa">
-                <Libro libro={libro} chico />
+                <Libro libro={libro} chico adquirido={tiene.has(libro.id)} />
               </div>
               <div className="libro-info">
                 <h2>{libro.titulo}</h2>
                 {tiene.has(libro.id) ? (
                   <>
+                    <SelloAdquirido />
                     <p className="tenue">
                       {libro.paginas > 0 ? `${libro.paginas} páginas · ` : ""}Licencia personal
                     </p>

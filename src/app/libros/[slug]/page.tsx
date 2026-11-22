@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BotonCompra, Encabezado, Indice, Libro, Pie } from "@/componentes";
-import { LIBROS, libroPorId, libroPorSlug, productoDeLibro } from "@/lib/catalogo";
+import { BotonCompra, Encabezado, Indice, Libro, Pie, SelloAdquirido, librosDelVisitante } from "@/componentes";
+import { LIBROS, libroPorId, libroPorSlug, precioPara, productoDeLibro } from "@/lib/catalogo";
 import { formatoARS } from "@/lib/config";
 
 // Dinámica como la portada: el encabezado muestra la sesión y los precios salen de las variables.
@@ -17,6 +17,9 @@ export default async function IndiceLibro({ params }: { params: Promise<{ slug: 
   if (!libro) notFound();
   const producto = productoDeLibro(libro.id);
   const otros = LIBROS.filter((l) => l.id !== libro.id);
+  const tiene = await librosDelVisitante();
+  const esMio = tiene.has(libro.id);
+  const precio = precioPara(producto, tiene) ?? producto.precioARS;
   return (
     <>
       <Encabezado />
@@ -24,7 +27,7 @@ export default async function IndiceLibro({ params }: { params: Promise<{ slug: 
         <section className="seccion">
           <div className="contenedor-ancho ficha">
             <div className="ficha-libro tapa">
-              <Libro libro={libro} />
+              <Libro libro={libro} adquirido={esMio} />
             </div>
             <div className="ficha-info">
               <p className="ceja">Libro {libro.id.toUpperCase()}{libro.disponible ? "" : " · Próximamente"}</p>
@@ -35,12 +38,17 @@ export default async function IndiceLibro({ params }: { params: Promise<{ slug: 
                 <div><dt>Cómo aprendés</dt><dd>{libro.metodo}</dd></div>
                 <div><dt>Qué vas a hacer</dt><dd>{libro.practica}</dd></div>
               </dl>
-              {libro.disponible ? (
+              {esMio ? (
+                <div className="ficha-compra">
+                  <SelloAdquirido />
+                  <Link href={`/leer/${libro.slug}`} className="boton grande">Leer</Link>
+                </div>
+              ) : libro.disponible ? (
                 <div className="ficha-compra">
                   <BotonCompra producto={producto.id} className="boton grande">
-                    Comprar por {formatoARS(producto.precioARS)}
+                    Comprar por {formatoARS(precio)}
                   </BotonCompra>
-                  {producto.descuento && (
+                  {producto.descuento && precio === producto.precioARS && (
                     <p className="tenue">
                       Si ya tenés &quot;{libroPorId(producto.descuento.siTiene).titulo}&quot;, lo pagás{" "}
                       {formatoARS(producto.descuento.precioARS)}.
