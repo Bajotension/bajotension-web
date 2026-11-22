@@ -50,3 +50,5 @@ npm run probar    # pruebas de marca de agua, firma de pagos y redirecciones
 
 ## Pasar a cobro real (solo cuando Danik lo decida)
 Cambiar `MP_ACCESS_TOKEN` por el de producción de tu cuenta real, `MP_MODO=produccion`, completar los datos de vendedor y tener monotributo para facturar (con el QR de Data Fiscal de ARCA en el pie, si corresponde).
+
+> Nota: las variables `NEXT_PUBLIC_*` se graban al construir la web. Si las cambiás en Netlify, hay que volver a desplegar (o subir un cambio al repo) para que la web las tome.
