@@ -1,6 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { PRODUCTO, siteUrl } from "./config";
+import { siteUrl } from "./config";
 import { supabaseAdmin } from "./supabase/server";
 
 const API = "https://api.mercadopago.com";
@@ -14,7 +14,12 @@ function token() {
 /** En producción solo se aceptan pagos reales; en prueba, solo de prueba. */
 const esperaPagoReal = () => process.env.MP_MODO === "produccion";
 
-export async function crearPreferencia(orden: { id: string; monto: number; email: string }) {
+export async function crearPreferencia(orden: {
+  id: string;
+  monto: number;
+  email: string;
+  producto: { id: string; titulo: string };
+}) {
   const res = await fetch(`${API}/checkout/preferences`, {
     method: "POST",
     headers: {
@@ -25,8 +30,8 @@ export async function crearPreferencia(orden: { id: string; monto: number; email
     body: JSON.stringify({
       items: [
         {
-          id: PRODUCTO.id,
-          title: PRODUCTO.titulo,
+          id: orden.producto.id,
+          title: orden.producto.titulo,
           quantity: 1,
           unit_price: orden.monto,
           currency_id: "ARS",
@@ -116,7 +121,7 @@ export async function procesarPago(pagoId: string): Promise<"habilitado" | "revo
   const db = supabaseAdmin();
   const { data: orden } = await db
     .from("ordenes")
-    .select("id, user_id, monto, estado")
+    .select("id, user_id, producto, monto, estado")
     .eq("id", pago.external_reference)
     .maybeSingle();
   if (!orden) return "ignorado";
@@ -133,7 +138,8 @@ export async function procesarPago(pagoId: string): Promise<"habilitado" | "revo
     const { error } = await db
       .from("accesos")
       .upsert(
-        { user_id: orden.user_id, producto: PRODUCTO.id, orden_id: orden.id, revocado: null },
+        // Un combo es un solo acceso: el catálogo lo traduce a sus libros (ver acceso.ts).
+        { user_id: orden.user_id, producto: orden.producto, orden_id: orden.id, revocado: null },
         { onConflict: "orden_id" },
       );
     if (error) throw error;

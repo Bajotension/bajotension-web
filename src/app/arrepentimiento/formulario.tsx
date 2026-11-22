@@ -11,8 +11,8 @@ export function FormularioArrepentimiento({ emailInicial }: { emailInicial: stri
         <p className="ceja">Pedido recibido</p>
         <p className="codigo">{estado.codigo}</p>
         <p>
-          Guardá este código de gestión. Te escribimos al email que dejaste y te devolvemos el dinero por el mismo
-          medio de pago. El acceso a la guía se da de baja cuando se hace la devolución.
+          Guardá este código de gestión. Te escribimos al email que dejaste. Si no se abrió ninguna página del
+          libro, te devolvemos el dinero por el mismo medio de pago y se da de baja el acceso.
         </p>
       </div>
     );

@@ -39,13 +39,23 @@ Hacelo en este orden. Cada paso deja algo que el siguiente necesita. Claude pued
 **Paso 8 · Dominio.** Registrá bajotension.ar en nic.ar → en Netlify, Domain management → Add domain → seguí los pasos de DNS. Después actualizá la dirección en Google, Supabase, Mercado Pago y `NEXT_PUBLIC_SITE_URL`.
 
 ### Cómo se atiende un arrepentimiento
+Antes de pagar, el comprador marca obligatoriamente "Acepto los términos y condiciones"; los términos dicen que al abrir una página pierde el arrepentimiento (art. 1116 inc. c CCyC). Sin esa casilla no se crea la orden. Solo corresponde devolver si **no abrió ninguna página**: en Table editor → `lecturas`, filtrá por su `user_id` y mirá si hay filas posteriores a la fecha de la orden. Si hay, se responde que no corresponde.
+
 Los pedidos llegan a Supabase → Table editor → `arrepentimientos`. Devolvé el dinero desde Mercado Pago (Actividad → la venta → Devolver). El aviso de Mercado Pago le quita el acceso a la guía solo. Después marcá `resuelto` con la fecha.
+
+## Libros y combos
+Todo el catálogo está en `src/lib/catalogo.ts`: cada libro (título, color de tapa, índice, páginas) y cada producto que se vende (libro suelto, el B con descuento para quien tiene el A, y el pack A+B). Los precios se cambian con las variables de `.env.example`.
+- **Libro A** · "Electricidad práctica para el hogar", tapa amarilla. Sus páginas van en la raíz del bucket `guia-paginas` (`GUIA_PAGINAS`).
+- **Libro B** · "Camino al electricista", tapa azul. Sus páginas van en la carpeta `camino-al-electricista/` del mismo bucket (`node --env-file=.env.local scripts/subir-guia.mjs <carpeta> camino-al-electricista`, después `LIBRO_B_PAGINAS`). Se pone a la venta con `LIBRO_B_DISPONIBLE=si`; ahí también aparece el pack.
+- Un combo se guarda como una sola compra (`accesos.producto = pack-a-b`) y el sitio la traduce a los dos libros. No hace falta cambiar la base de datos.
+- Páginas públicas: `/libros` (comparar) y `/libros/<libro>` (índice). El lector está en `/leer/<libro>`.
+- Para sumar un libro nuevo: agregarlo a `LIBROS` y darle su producto en `PRODUCTOS`. No cambiar los `id` de productos ya vendidos.
 
 ## Para probar en la PC
 ```
 npm install
 npm run dev       # abre http://localhost:3000
-npm run probar    # pruebas de marca de agua, firma de pagos y redirecciones
+npm run probar    # pruebas de marca de agua, firma de pagos, redirecciones y precios del catálogo
 ```
 
 ## Pasar a cobro real (solo cuando Danik lo decida)
