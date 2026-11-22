@@ -1,26 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Encabezado, IconoInstagram, Libro, Pie } from "@/componentes";
-import { PRODUCTO, formatoARS } from "@/lib/config";
+import { BotonCompra, ComparadorLibros, Encabezado, IconoInstagram, Indice, Libro, Pie } from "@/componentes";
+import { LIBROS, PACK, productoDeLibro, productoDisponible } from "@/lib/catalogo";
+import { formatoARS } from "@/lib/config";
 import { INSTAGRAM } from "@/lib/marca";
 import { BarraMovil } from "./barra-movil";
 
-const CAPITULOS = [
-  ["Cómo llega la electricidad a tu casa", "Red, medidor, acometida y tablero. Qué son 220 V y 50 Hz."],
-  ["Tensión, corriente y potencia", "Volts, amperes y watts explicados con agua en un caño."],
-  ["Qué le hace la corriente al cuerpo", "Por qué es peligrosa, qué son 30 mA y las reglas de oro."],
-  ["El tablero por dentro", "Corte general, térmicas y disyuntor. Para qué sirve cada uno."],
-  ["Puesta a tierra", "Qué es la jabalina y por qué sin tierra el disyuntor no alcanza."],
-  ["Cables", "Colores, secciones, por qué se calientan y cómo reconocer uno bueno."],
-  ["Los circuitos de tu casa", "Iluminación, tomas y circuitos especiales para aire o termotanque."],
-  ["Enchufes, zapatillas y prolongadores", "Fichas, adaptadores, falsos contactos y chispas."],
-  ["Llaves e iluminación", "Llaves simples y de combinación, LED y la luz “fantasma”."],
-  ["Consumo y boleta de luz", "Qué gasta más, consumo fantasma y cómo detectar fugas."],
-  ["Qué hacer cuando…", "Salta la térmica, salta el disyuntor, olor a quemado, media casa sin luz."],
-  ["Tu casa segura", "Chicos, baño y cocina, tormentas, primeros auxilios y checklist final."],
-];
+// La portada vende el Libro A; el resto de la colección se compara más abajo.
+const LIBRO = LIBROS[0];
+const PRODUCTO = productoDeLibro(LIBRO.id);
 
 const PREGUNTAS = [
+  [
+    "¿Qué diferencia hay entre los libros?",
+    "“Electricidad práctica para el hogar” es para entender tu casa y hacer los arreglos de todos los días, desde cero. “Camino al electricista” es la electricidad a fondo, con cálculos, para el que quiere formarse. Más arriba están lado a lado y con el índice de cada uno.",
+  ],
   [
     "¿Cómo la leo?",
     "Desde la web, con tu cuenta de Google, en la computadora o en el celular. Entrás a tu biblioteca y seguís donde la dejaste.",
@@ -38,19 +32,18 @@ const PREGUNTAS = [
   ["Pagué y no veo la guía", `Esperá unos minutos y recargá tu biblioteca. Si sigue sin aparecer, escribinos por Instagram a @${INSTAGRAM.usuario}.`],
 ];
 
-function BotonComprar({ texto = "Comprar la guía" }: { texto?: string }) {
+function BotonComprar({ texto = "Comprar el libro" }: { texto?: string }) {
   return (
-    <form action="/comprar" method="post">
-      <button className="boton grande" type="submit">
-        {texto}
-        <span aria-hidden className="flecha">→</span>
-      </button>
-    </form>
+    <BotonCompra producto={PRODUCTO.id} className="boton grande">
+      {texto}
+      <span aria-hidden className="flecha">→</span>
+    </BotonCompra>
   );
 }
 
 export default function Portada() {
   const descuento = PRODUCTO.precioRegularARS > PRODUCTO.precioARS;
+  const hayPack = productoDisponible(PACK);
   return (
     <>
       <Encabezado conCompra />
@@ -61,7 +54,7 @@ export default function Portada() {
           <div className="hero-in">
             <div className="hero-texto aparecer">
               <span className="pildora">
-                <span className="punto" /> Nueva guía digital
+                <span className="punto" /> Libro A · Nueva guía digital
               </span>
               <h1>
                 La electricidad de tu casa, <em>por fin clara.</em>
@@ -81,7 +74,7 @@ export default function Portada() {
               <p className="hero-nota">Pago único con Mercado Pago · Acceso inmediato · PC y celular</p>
             </div>
             <div className="hero-libro aparecer demora">
-              <Libro />
+              <Libro libro={LIBRO} />
             </div>
           </div>
         </section>
@@ -89,7 +82,7 @@ export default function Portada() {
         {/* Datos */}
         <section className="datos" aria-label="La guía en números">
           <div className="datos-in">
-            <div><strong>12</strong><span>capítulos</span></div>
+            <div><strong>{LIBRO.capitulos.length}</strong><span>capítulos</span></div>
             <div><strong>A color</strong><span>ilustrada de principio a fin</span></div>
             <div><strong>AEA</strong><span>con criterios de la reglamentación argentina</span></div>
             <div><strong>2</strong><span>dispositivos a la vez</span></div>
@@ -125,18 +118,12 @@ export default function Portada() {
         <section className="seccion fondo-blanco" id="contenido">
           <div className="contenedor-ancho">
             <p className="ceja">Contenido</p>
-            <h2>Doce capítulos, <em>de la calle al enchufe.</em></h2>
-            <ol className="capitulos">
-              {CAPITULOS.map(([t, d], i) => (
-                <li key={t}>
-                  <span className="cap-num">{String(i + 1).padStart(2, "0")}</span>
-                  <div>
-                    <h3>{t}</h3>
-                    <p>{d}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <h2>Dieciséis capítulos, <em>de cero a tu primer arreglo.</em></h2>
+            <Indice libro={LIBRO} />
+            <p className="ficha-otros">
+              <Link href={`/libros/${LIBRO.slug}`} className="enlace">Ver la ficha completa →</Link>
+              <a href="#comparar" className="enlace">Compararlo con “Camino al electricista” →</a>
+            </p>
           </div>
         </section>
 
@@ -182,17 +169,26 @@ export default function Portada() {
           </div>
         </section>
 
+        {/* Comparar los libros */}
+        <section className="seccion" id="comparar">
+          <div className="contenedor-ancho">
+            <p className="ceja">La colección</p>
+            <h2>¿Cuál es para vos? <em>Comparalos.</em></h2>
+            <ComparadorLibros />
+          </div>
+        </section>
+
         {/* Precio */}
         <section className="seccion fondo-blanco" id="comprar">
           <div className="oferta">
             <div className="oferta-libro">
-              <Libro chico />
+              <Libro libro={LIBRO} chico />
             </div>
             <div className="oferta-info">
               <p className="ceja clara">Guía digital</p>
               <h2>{PRODUCTO.titulo}</h2>
               <ul className="incluye">
-                <li>Los 12 capítulos, ilustrados a color</li>
+                <li>Los {LIBRO.capitulos.length} capítulos, ilustrados a color</li>
                 <li>Lectura online en PC y celular</li>
                 <li>Seguís donde la dejaste</li>
                 <li>Pago único, sin suscripción</li>
@@ -201,11 +197,15 @@ export default function Portada() {
                 <span className="monto">{formatoARS(PRODUCTO.precioARS)}</span>
                 {descuento && <s>{formatoARS(PRODUCTO.precioRegularARS)}</s>}
               </div>
-              <form action="/comprar" method="post">
-                <button className="boton claro grande ancho" type="submit">
-                  Comprar con Mercado Pago <span aria-hidden className="flecha">→</span>
-                </button>
-              </form>
+              <BotonCompra producto={PRODUCTO.id} className="boton claro grande ancho">
+                Comprar con Mercado Pago <span aria-hidden className="flecha">→</span>
+              </BotonCompra>
+              {hayPack && (
+                <p className="oferta-nota">
+                  ¿Querés los dos libros? El pack sale {formatoARS(PACK.precioARS)}.{" "}
+                  <a href="#comparar">Ver el pack</a>
+                </p>
+              )}
               <p className="oferta-nota">
                 Ingresás con Google, pagás y la leés al instante. Al comprar aceptás los{" "}
                 <Link href="/terminos">términos y condiciones</Link>.
@@ -238,9 +238,7 @@ export default function Portada() {
           <span className="monto">{formatoARS(PRODUCTO.precioARS)}</span>
           {descuento && <s>{formatoARS(PRODUCTO.precioRegularARS)}</s>}
         </div>
-        <form action="/comprar" method="post">
-          <button className="boton" type="submit">Comprar</button>
-        </form>
+        <BotonCompra producto={PRODUCTO.id}>Comprar</BotonCompra>
       </BarraMovil>
     </>
   );

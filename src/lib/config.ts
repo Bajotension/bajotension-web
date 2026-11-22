@@ -1,12 +1,4 @@
-// Datos del producto. El precio vive SOLO en el servidor.
-export const PRODUCTO = {
-  id: "guia-electricidad-hogar",
-  titulo: "Electricidad básica",
-  precioARS: Number(process.env.PRECIO_ARS ?? 9900),
-  precioRegularARS: Number(process.env.PRECIO_REGULAR_ARS ?? 14900),
-  // Cantidad de páginas subidas a Storage (pagina-001.webp, pagina-002.webp, ...)
-  paginas: Number(process.env.GUIA_PAGINAS ?? 0),
-};
+// Los libros, combos y precios están en ./catalogo.ts
 
 export const LIMITES = {
   dispositivosActivos: 2, // PC y celular

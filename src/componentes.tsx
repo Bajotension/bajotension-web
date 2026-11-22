@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ENLACES_LEGALES, VENDEDOR } from "@/lib/config";
+import { LIBROS, PACK, libroPorId, productoDeLibro, productoDisponible, type Libro as LibroDatos } from "@/lib/catalogo";
+import { ENLACES_LEGALES, VENDEDOR, formatoARS } from "@/lib/config";
 import { INSTAGRAM } from "@/lib/marca";
 import { usuarioActual } from "@/lib/supabase/server";
 
@@ -16,6 +17,7 @@ export async function Encabezado({ conCompra = false }: { conCompra?: boolean })
               <a href="#preguntas" className="enlace solo-pc">Preguntas</a>
             </>
           )}
+          <Link href="/libros" className="enlace">Libros</Link>
           {u ? (
             <Link href="/biblioteca" className="enlace">Mi biblioteca</Link>
           ) : (
@@ -77,29 +79,24 @@ export function Pie() {
 
 /**
  * Libro 3D: tapa dibujada en código con el rayo; al apuntarlo se abre un poco.
- * Colección (bajadas propuestas):
- *  azul  · Electricidad básica     · "Entendé tu casa, sin tecnicismos"
- *  verde · Energías renovables     · "Paneles solares y energía limpia para tu casa"
- *  rojo  · Electricidad industrial · "Tableros, motores y comandos, explicados claro"
+ * Los datos de cada libro (título, color, bajada) están en src/lib/catalogo.ts.
+ * Colores de la colección: amarillo, azul, verde, rojo.
  */
-export type ColorLibro = "azul" | "verde" | "rojo";
-
 export function Libro({
+  libro,
   chico = false,
-  color = "azul",
-  titulo = ["Electricidad", "básica"],
-  bajada = "Entendé tu casa, sin tecnicismos",
 }: {
+  libro: Pick<LibroDatos, "tituloTapa" | "bajada" | "color" | "capitulos">;
   chico?: boolean;
-  color?: ColorLibro;
-  titulo?: [string, string];
-  bajada?: string;
 }) {
+  const [linea1, linea2] = libro.tituloTapa;
+  const primero = libro.capitulos[0];
+  const largo = Math.max(linea1.length, linea2.length) > 14;
   return (
-    <div className={`libro3d libro-${color}${chico ? " chico" : ""}`} aria-hidden>
+    <div className={`libro3d libro-${libro.color}${chico ? " chico" : ""}`} aria-hidden>
       <div className="libro3d-interior">
-        <span className="int-ceja">Capítulo 1</span>
-        <span className="int-titulo">Cómo llega la electricidad a tu casa</span>
+        <span className="int-ceja">Capítulo {primero?.n ?? 1}</span>
+        <span className="int-titulo">{primero?.titulo}</span>
         <span className="int-linea" />
         <span className="int-linea" />
         <span className="int-linea corta" />
@@ -110,17 +107,129 @@ export function Libro({
       <div className="libro3d-tapa">
         <div className="tapa-lineas" />
         <span className="tapa-ceja">Guía ilustrada</span>
-        <span className="tapa-titulo">
-          {titulo[0]}
+        <span className={`tapa-titulo${largo ? " largo" : ""}`}>
+          {linea1}
           <br />
-          <em>{titulo[1]}</em>
+          <em>{linea2}</em>
         </span>
-        <span className="tapa-sub">{bajada}</span>
+        <span className="tapa-sub">{libro.bajada}</span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="tapa-rayo" src="/rayo.webp" alt="" draggable={false} />
         <span className="tapa-firma">Bajo Tensión</span>
         <div className="tapa-brillo" />
       </div>
+    </div>
+  );
+}
+
+/** Botón que inicia la compra de un producto del catálogo (libro suelto o combo). */
+export function BotonCompra({
+  producto,
+  children,
+  className = "boton",
+}: {
+  producto: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <form action="/comprar" method="post">
+      <input type="hidden" name="producto" value={producto} />
+      <button className={className} type="submit">{children}</button>
+    </form>
+  );
+}
+
+/** Índice de un libro: número, título y de qué trata cada capítulo. */
+export function Indice({ libro }: { libro: LibroDatos }) {
+  return (
+    <ol className="capitulos">
+      {libro.capitulos.map((c) => (
+        <li key={c.n}>
+          <span className="cap-num">{String(c.n).padStart(2, "0")}</span>
+          <div>
+            <h3>{c.titulo}</h3>
+            <p>{c.detalle}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Tabla para comparar los libros de la colección, lado a lado. */
+export function ComparadorLibros() {
+  const filas: [string, (l: LibroDatos) => React.ReactNode][] = [
+    ["Para quién", (l) => l.para],
+    ["Nivel", (l) => l.nivel],
+    ["Cómo aprendés", (l) => l.metodo],
+    ["Qué vas a hacer", (l) => l.practica],
+    ["Reglamentación AEA", (l) => l.reglamentacion],
+    ["Capítulos", (l) => `${l.capitulos.length} capítulos`],
+    [
+      "Precio",
+      (l) => {
+        const p = productoDeLibro(l.id);
+        if (!l.disponible) return <span className="tenue">Próximamente</span>;
+        return (
+          <>
+            <strong>{formatoARS(p.precioARS)}</strong>
+            {p.precioRegularARS > p.precioARS && <s className="precio-viejo">{formatoARS(p.precioRegularARS)}</s>}
+            {p.descuento && (
+              <span className="comparar-nota">
+                {formatoARS(p.descuento.precioARS)} si ya tenés &quot;{libroPorId(p.descuento.siTiene).titulo}&quot;
+              </span>
+            )}
+          </>
+        );
+      },
+    ],
+  ];
+  const pack = productoDisponible(PACK);
+  return (
+    <div className="comparar" style={{ ["--cols" as string]: LIBROS.length }}>
+      <div className="comparar-fila comparar-cabeza">
+        <span className="comparar-etiqueta" />
+        {LIBROS.map((l) => (
+          <div key={l.id} className={`comparar-libro color-${l.color}`}>
+            <span className="comparar-punto" aria-hidden />
+            <span>
+              <span className="comparar-letra">Libro {l.id.toUpperCase()}</span>
+              <strong>{l.titulo}</strong>
+            </span>
+          </div>
+        ))}
+      </div>
+      {filas.map(([etiqueta, valor]) => (
+        <div className="comparar-fila" key={etiqueta}>
+          <span className="comparar-etiqueta">{etiqueta}</span>
+          {LIBROS.map((l) => (
+            <div key={l.id} className="comparar-celda">{valor(l)}</div>
+          ))}
+        </div>
+      ))}
+      <div className="comparar-fila comparar-acciones">
+        <span className="comparar-etiqueta" />
+        {LIBROS.map((l) => (
+          <div key={l.id} className="comparar-celda">
+            <Link href={`/libros/${l.slug}`} className="boton secundario chico">Ver índice</Link>
+            {l.disponible && (
+              <BotonCompra producto={productoDeLibro(l.id).id} className="boton chico">Comprar</BotonCompra>
+            )}
+          </div>
+        ))}
+      </div>
+      {pack && (
+        <div className="comparar-pack">
+          <div>
+            <strong>{PACK.titulo}</strong>
+            <span className="tenue">
+              {" "}· {formatoARS(PACK.precioARS)} <s>{formatoARS(PACK.precioRegularARS)}</s>
+            </span>
+          </div>
+          <BotonCompra producto={PACK.id} className="boton chico">Comprar el pack</BotonCompra>
+        </div>
+      )}
     </div>
   );
 }

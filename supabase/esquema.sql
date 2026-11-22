@@ -49,7 +49,9 @@ alter table public.accesos enable row level security;
 alter table public.dispositivos enable row level security;
 alter table public.lecturas enable row level security;
 
--- Bucket privado para las páginas de la guía (no público)
+-- Bucket privado para las páginas de los libros (no público).
+-- Libro A en la raíz (pagina-001.webp...), Libro B en la carpeta camino-al-electricista/.
+-- accesos.producto guarda el id del producto comprado (libro o combo); ver src/lib/catalogo.ts.
 insert into storage.buckets (id, name, public)
 values ('guia-paginas', 'guia-paginas', false)
 on conflict (id) do update set public = false;

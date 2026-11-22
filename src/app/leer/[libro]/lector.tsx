@@ -2,9 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const CLAVE = "bt-ultima-pagina";
-
-export function Lector({ total, titulo }: { total: number; titulo: string }) {
+export function Lector({ total, titulo, slug, clave }: { total: number; titulo: string; slug: string; clave: string }) {
   const [pagina, setPagina] = useState(1);
   const [estado, setEstado] = useState<"cargando" | "ok" | "error">("cargando");
   const [mensaje, setMensaje] = useState("");
@@ -13,16 +11,16 @@ export function Lector({ total, titulo }: { total: number; titulo: string }) {
 
   useEffect(() => {
     try {
-      const n = Number(localStorage.getItem(CLAVE));
+      const n = Number(localStorage.getItem(clave));
       if (n >= 1 && n <= total) setPagina(n);
     } catch {}
-  }, [total]);
+  }, [total, clave]);
 
   useEffect(() => {
     let cancelado = false;
     let url: string | null = null;
     setEstado("cargando");
-    fetch(`/api/pagina/${pagina}`, { cache: "no-store" })
+    fetch(`/api/pagina/${pagina}?libro=${encodeURIComponent(slug)}`, { cache: "no-store" })
       .then(async (r) => {
         if (r.status === 401) {
           window.location.href = "/auth/salir?motivo=sesion-cerrada";
@@ -43,14 +41,14 @@ export function Lector({ total, titulo }: { total: number; titulo: string }) {
         }
       });
     try {
-      localStorage.setItem(CLAVE, String(pagina));
+      localStorage.setItem(clave, String(pagina));
     } catch {}
     window.scrollTo({ top: 0 });
     return () => {
       cancelado = true;
       if (url) setTimeout(() => URL.revokeObjectURL(url!), 1000);
     };
-  }, [pagina]);
+  }, [pagina, slug, clave]);
 
   const ir = useCallback((n: number) => setPagina(Math.min(total, Math.max(1, n))), [total]);
 

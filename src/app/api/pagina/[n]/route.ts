@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { tieneLaGuia } from "@/lib/acceso";
-import { BUCKET_PAGINAS, LIMITES, PRODUCTO } from "@/lib/config";
+import { tieneLibro } from "@/lib/acceso";
+import { LIBROS, libroPorSlug } from "@/lib/catalogo";
+import { BUCKET_PAGINAS, LIMITES } from "@/lib/config";
 import { dispositivoValido } from "@/lib/dispositivos";
 import { aplicarMarcaDeAgua } from "@/lib/marca-de-agua";
 import { supabaseAdmin, usuarioActual } from "@/lib/supabase/server";
@@ -16,14 +17,19 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ n: string }
   const sitio = req.headers.get("sec-fetch-site");
   if (sitio && sitio !== "same-origin") return err(403, "origen");
 
+  // ?libro=<slug>. Sin dato, el primer libro (así funcionan los lectores ya abiertos).
+  const slug = req.nextUrl.searchParams.get("libro");
+  const libro = slug ? libroPorSlug(slug) : LIBROS[0];
+  if (!libro) return err(404, "libro");
+
   const { n } = await ctx.params;
   const pagina = Number(n);
-  if (!Number.isInteger(pagina) || pagina < 1 || pagina > PRODUCTO.paginas) return err(404, "pagina");
+  if (!Number.isInteger(pagina) || pagina < 1 || pagina > libro.paginas) return err(404, "pagina");
 
   const u = await usuarioActual();
   if (!u) return err(401, "sesion");
   if (!(await dispositivoValido(u.id))) return err(401, "dispositivo");
-  if (!(await tieneLaGuia(u.id))) return err(403, "compra");
+  if (!(await tieneLibro(u.id, libro.id))) return err(403, "compra");
 
   const db = supabaseAdmin();
   const haceUnaHora = new Date(Date.now() - 3600 * 1000).toISOString();
@@ -35,7 +41,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ n: string }
   if ((count ?? 0) >= LIMITES.paginasPorHora) return err(429, "limite");
   await db.from("lecturas").insert({ user_id: u.id, pagina });
 
-  const archivo = `pagina-${String(pagina).padStart(3, "0")}.webp`;
+  const archivo = `${libro.carpeta}pagina-${String(pagina).padStart(3, "0")}.webp`;
   const { data, error } = await db.storage.from(BUCKET_PAGINAS).download(archivo);
   if (error || !data) return err(404, "archivo");
 
