@@ -339,3 +339,4 @@ s { color: var(--tinta-3); }
   .pie-enlaces { padding: 0 16px 22px; }
 }
 .login-error { margin-top: 12px; font-size: 13px; color: #a3332b; text-align: center; }
+.aviso-detalle { display: block; margin-top: 6px; font-size: 12px; opacity: .75; }
