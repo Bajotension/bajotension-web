@@ -23,7 +23,14 @@ export async function GET(req: NextRequest) {
   const { data, error } = await sb.auth.exchangeCodeForSession(code);
   if (error || !data.user) return fallo(error?.message ?? "sin usuario");
 
-  const r = await registrarDispositivo(data.user.id, req.headers.get("user-agent") ?? "");
+  let r;
+  try {
+    r = await registrarDispositivo(data.user.id, req.headers.get("user-agent") ?? "");
+  } catch (e) {
+    await sb.auth.signOut();
+    const m = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+    return fallo(`base de datos: ${m}`);
+  }
   if (!r.ok) {
     await sb.auth.signOut();
     return NextResponse.redirect(`${base}/login?error=dispositivos`);
