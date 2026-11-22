@@ -109,7 +109,9 @@ const ESTADOS_QUE_REVOCAN = new Set(["refunded", "charged_back", "cancelled"]);
 export async function procesarPago(pagoId: string): Promise<"habilitado" | "revocado" | "pendiente" | "ignorado"> {
   const pago = await obtenerPago(pagoId);
   if (!pago || !pago.external_reference) return "ignorado";
-  if (pago.live_mode !== esperaPagoReal()) return "ignorado";
+  // En producción no se aceptan pagos de prueba. En modo prueba, los pagos entre
+  // usuarios de prueba de Mercado Pago pueden venir con live_mode true o false.
+  if (esperaPagoReal() && !pago.live_mode) return "ignorado";
 
   const db = supabaseAdmin();
   const { data: orden } = await db
